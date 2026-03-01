@@ -18,6 +18,9 @@ pnpm dev
 ## Supabase
 Auth: magic link.
 
-Remember to allowlist your redirect URLs in Supabase:
+1) Allowlist redirect URLs in Supabase:
 - `http://localhost:5173/**`
 - your deployed URL later
+
+2) Apply the DB schema:
+- run `supabase/schema.sql` in the Supabase SQL editor

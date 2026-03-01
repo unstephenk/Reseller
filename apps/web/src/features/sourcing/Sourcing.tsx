@@ -14,7 +14,11 @@ const PRESETS = [
   "book collection",
 ];
 
-export function Sourcing() {
+export function Sourcing({
+  onAddLead,
+}: {
+  onAddLead: () => void;
+}) {
   const [query, setQuery] = useState("book lot");
 
   const fbUrl = useMemo(() => buildFacebookMarketplaceSearchUrl(query), [query]);
@@ -76,11 +80,21 @@ export function Sourcing() {
         </section>
 
         <section className="rounded-2xl border bg-white p-4 shadow-sm">
-          <div className="text-sm font-medium">Next: Lead capture</div>
-          <p className="mt-1 text-sm text-slate-600">
-            After you find a listing, you’ll paste the URL + asking price and we’ll
-            track it through the pipeline.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Found something?</div>
+              <p className="mt-1 text-sm text-slate-600">
+                Paste the FB URL + asking price to create a lead.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white"
+              onClick={onAddLead}
+            >
+              Add lead
+            </button>
+          </div>
         </section>
       </main>
 
