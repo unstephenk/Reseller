@@ -1,4 +1,4 @@
-export type TabKey = "source" | "add" | "pipeline";
+export type TabKey = "source" | "add" | "pipeline" | "stats";
 
 export function TabBar({
   tab,
@@ -22,10 +22,11 @@ export function TabBar({
   );
 
   return (
-    <div className="mx-auto flex max-w-md gap-2 px-4 pb-4">
+    <div className="mx-auto grid max-w-md grid-cols-4 gap-2 px-4 pb-4">
       {item("source", "Source")}
       {item("add", "Add")}
       {item("pipeline", "Pipeline")}
+      {item("stats", "Stats")}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createLead } from "./lotsApi";
-import { dollarsToCents } from "./money";
+import { dollarsToCents, centsToDollars } from "./money";
+import { decide } from "./decide";
 
 const TAGS = ["mixed", "textbooks", "manga", "comics", "kids", "vintage"];
 
@@ -16,8 +17,24 @@ export function AddLead({
   const [total, setTotal] = useState("");
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState<string[]>(["mixed"]);
+  const [netPerBook, setNetPerBook] = useState("4");
 
   const askingCents = useMemo(() => dollarsToCents(asking), [asking]);
+  const netPerBookCents = useMemo(() => dollarsToCents(netPerBook), [netPerBook]);
+  const sellableN = useMemo(
+    () => (sellable.trim() ? Number(sellable) : null),
+    [sellable],
+  );
+
+  const decision = useMemo(
+    () =>
+      decide({
+        buyPriceCents: askingCents,
+        sellableBooks: sellableN,
+        estNetPerBookCents: netPerBookCents,
+      }),
+    [askingCents, sellableN, netPerBookCents],
+  );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,6 +46,7 @@ export function AddLead({
       approx_sellable_books: sellable ? Number(sellable) : undefined,
       approx_total_books: total ? Number(total) : undefined,
       category_tags: tags,
+      est_net_per_book_cents: netPerBookCents ?? undefined,
       notes: notes.trim() || undefined,
     });
 
@@ -95,6 +113,42 @@ export function AddLead({
           </label>
         </div>
 
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <div className="text-sm font-medium">Est net / book ($)</div>
+            <input
+              className="mt-1 w-full rounded-xl border px-3 py-2"
+              value={netPerBook}
+              onChange={(e) => setNetPerBook(e.target.value)}
+              inputMode="decimal"
+              placeholder="4"
+            />
+            <div className="mt-1 text-xs text-slate-500">
+              Conservative, after shipping.
+            </div>
+          </label>
+          <div className="rounded-xl border bg-slate-50 p-3">
+            <div className="text-xs font-medium text-slate-600">Quick presets</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                { label: "kids $3", v: "3" },
+                { label: "mixed $4", v: "4" },
+                { label: "manga $6", v: "6" },
+                { label: "textbooks $8", v: "8" },
+              ].map((p) => (
+                <button
+                  key={p.v}
+                  type="button"
+                  className="rounded-full border bg-white px-3 py-1 text-xs"
+                  onClick={() => setNetPerBook(p.v)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <label className="block">
           <div className="text-sm font-medium">Total # (optional)</div>
           <input
@@ -141,6 +195,38 @@ export function AddLead({
         </label>
       </div>
 
+      <div className="rounded-2xl border bg-slate-50 p-3">
+        <div className="text-xs font-medium text-slate-600">Decision helper</div>
+        {decision.shouldBuy == null ? (
+          <div className="mt-1 text-sm text-slate-600">
+            Enter asking price + sellable # to get a buy/pass.
+          </div>
+        ) : (
+          <div className="mt-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Est net</span>
+              <span className="font-medium">${centsToDollars(decision.estNetCents)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Est profit</span>
+              <span className="font-medium">${centsToDollars(decision.estProfitCents)}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-slate-600">Verdict</span>
+              <span
+                className={
+                  decision.shouldBuy
+                    ? "rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white"
+                    : "rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white"
+                }
+              >
+                {decision.shouldBuy ? "BUY" : "PASS"} (profit target $40)
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
       <button
         type="submit"
         className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white"
@@ -149,7 +235,7 @@ export function AddLead({
       </button>
 
       <div className="text-xs text-slate-500">
-        This saves to Supabase (cloud). You must apply `supabase/schema.sql` first.
+        Saves to Supabase (cloud).
       </div>
     </form>
   );

@@ -18,6 +18,7 @@ export type CreateLotInput = {
   approx_total_books?: number;
   approx_sellable_books?: number;
   category_tags?: string[];
+  est_net_per_book_cents?: number;
   notes?: string;
 };
 

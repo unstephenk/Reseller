@@ -96,17 +96,19 @@ export function Pipeline({ refreshToken }: { refreshToken: number }) {
                     {l.approx_sellable_books ? ` • Sellable: ${l.approx_sellable_books}` : ""}
                   </div>
 
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {STATUSES.filter((x) => x.key !== l.status).slice(0, 3).map((x) => (
-                      <button
-                        key={x.key}
-                        className="rounded-full border px-3 py-1 text-xs"
-                        type="button"
-                        onClick={() => move(l.id, x.key)}
-                      >
-                        Move → {x.label}
-                      </button>
-                    ))}
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <div className="text-xs text-slate-500">Status</div>
+                    <select
+                      className="w-40 rounded-xl border bg-white px-3 py-2 text-xs"
+                      value={l.status}
+                      onChange={(e) => move(l.id, e.target.value as LotStatus)}
+                    >
+                      {STATUSES.map((x) => (
+                        <option key={x.key} value={x.key}>
+                          {x.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {l.source_url ? (

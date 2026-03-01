@@ -6,6 +6,7 @@ import { Sourcing } from "./features/sourcing/Sourcing";
 import { TabBar, type TabKey } from "./components/TabBar";
 import { AddLead } from "./features/lots/AddLead";
 import { Pipeline } from "./features/lots/Pipeline";
+import { Stats } from "./features/stats/Stats";
 
 export default function App() {
   const { session, loading } = useSession();
@@ -63,6 +64,8 @@ export default function App() {
         ) : null}
 
         {tab === "pipeline" ? <Pipeline refreshToken={refreshToken} /> : null}
+
+        {tab === "stats" ? <Stats refreshToken={refreshToken} /> : null}
       </div>
     </div>
   );
