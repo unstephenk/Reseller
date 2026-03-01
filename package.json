@@ -1,0 +1,12 @@
+{
+  "name": "reseller",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev": "pnpm -C apps/web dev",
+    "build": "pnpm -C apps/web build",
+    "preview": "pnpm -C apps/web preview",
+    "lint": "pnpm -C apps/web lint"
+  }
+}
