@@ -211,6 +211,10 @@ export function AddLead({
               <span className="text-slate-600">Est profit</span>
               <span className="font-medium">${centsToDollars(decision.estProfitCents)}</span>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Target profit</span>
+              <span className="font-medium">${centsToDollars(decision.desiredProfitCents)}</span>
+            </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-slate-600">Verdict</span>
               <span
@@ -220,7 +224,7 @@ export function AddLead({
                     : "rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white"
                 }
               >
-                {decision.shouldBuy ? "BUY" : "PASS"} (profit target $40)
+                {decision.shouldBuy ? "BUY" : "PASS"} (target ${(decision.desiredProfitFloorCents / 100).toFixed(0)} or {(decision.desiredProfitPercentOfBuy * 100).toFixed(0)}%)
               </span>
             </div>
           </div>
