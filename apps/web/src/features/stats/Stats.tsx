@@ -33,9 +33,26 @@ export function Stats({ refreshToken }: { refreshToken: number }) {
     const boughtCount = lots.filter((l) => l.status === "bought").length;
 
     // Rough estimate using asking price + est net per book if present
+    // Prefer actuals when present.
     let estProfitCents = 0;
+    let actualProfitCents = 0;
+
     for (const l of lots) {
       if (
+        l.sold_price_cents != null ||
+        l.shipping_charged_cents != null ||
+        l.shipping_paid_cents != null ||
+        l.ebay_fees_cents != null ||
+        l.supplies_cents != null
+      ) {
+        const revenue = (l.sold_price_cents ?? 0) + (l.shipping_charged_cents ?? 0);
+        const costs =
+          (l.purchase_price_cents ?? l.asking_price_cents ?? 0) +
+          (l.shipping_paid_cents ?? 0) +
+          (l.ebay_fees_cents ?? 0) +
+          (l.supplies_cents ?? 0);
+        actualProfitCents += revenue - costs;
+      } else if (
         l.asking_price_cents != null &&
         l.approx_sellable_books != null &&
         l.est_net_per_book_cents != null
@@ -45,7 +62,7 @@ export function Stats({ refreshToken }: { refreshToken: number }) {
       }
     }
 
-    return { leadCount, boughtCount, estProfitCents };
+    return { leadCount, boughtCount, estProfitCents, actualProfitCents };
   }, [lots]);
 
   if (error) {
@@ -70,7 +87,15 @@ export function Stats({ refreshToken }: { refreshToken: number }) {
         </div>
       </div>
       <div className="mt-3 rounded-xl border bg-slate-50 p-3">
-        <div className="text-xs text-slate-500">Est profit (from filled fields)</div>
+        <div className="text-xs text-slate-500">Actual profit (from actuals)</div>
+        <div className="text-lg font-semibold">${(cents(summary.actualProfitCents) / 100).toFixed(0)}</div>
+        <div className="mt-1 text-xs text-slate-500">
+          Uses sold + shipping charged − (buy + ship paid + fees + supplies).
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-xl border bg-slate-50 p-3">
+        <div className="text-xs text-slate-500">Est profit (from estimates)</div>
         <div className="text-lg font-semibold">${(cents(summary.estProfitCents) / 100).toFixed(0)}</div>
         <div className="mt-1 text-xs text-slate-500">
           Uses asking + sellable # + est net/book.

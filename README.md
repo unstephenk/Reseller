@@ -23,4 +23,5 @@ Auth: magic link.
 - your deployed URL later
 
 2) Apply the DB schema:
-- run `supabase/schema.sql` in the Supabase SQL editor
+- first-time: run `supabase/schema.sql` in the Supabase SQL editor
+- upgrades: run the latest file in `supabase/migrations/` (ex: `2026-03-02-settings-and-actuals.sql`)

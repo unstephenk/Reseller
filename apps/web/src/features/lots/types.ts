@@ -23,6 +23,15 @@ export type Lot = {
   radius_miles: number | null;
   est_net_per_book_cents: number | null;
   target_profit_cents: number | null;
+
+  listed_at: string | null;
+  sold_at: string | null;
+  sold_price_cents: number | null;
+  shipping_charged_cents: number | null;
+  shipping_paid_cents: number | null;
+  ebay_fees_cents: number | null;
+  supplies_cents: number | null;
+
   notes: string | null;
   created_at: string;
   updated_at: string;

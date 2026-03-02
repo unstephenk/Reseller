@@ -4,8 +4,8 @@ export type DecideInput = {
   estNetPerBookCents: number | null;
 
   // rule: target profit = max(floor, percentOfBuy * buyPrice)
-  profitFloorCents?: number; // default 1000 ($10)
-  profitPercentOfBuy?: number; // default 0.25 (25%)
+  profitFloorCents: number;
+  profitPercentOfBuy: number;
 };
 
 export type DecideOutput = {
@@ -21,8 +21,8 @@ export function decide({
   buyPriceCents,
   sellableBooks,
   estNetPerBookCents,
-  profitFloorCents = 1000,
-  profitPercentOfBuy = 0.25,
+  profitFloorCents,
+  profitPercentOfBuy,
 }: DecideInput): DecideOutput {
   if (
     buyPriceCents == null ||

@@ -2,14 +2,24 @@ import { useMemo, useState } from "react";
 import { createLead } from "./lotsApi";
 import { dollarsToCents, centsToDollars } from "./money";
 import { decide } from "./decide";
+import { useSettings } from "../settings/useSettings";
 
 const TAGS = ["mixed", "textbooks", "manga", "comics", "kids", "vintage"];
+
+const DEFAULT_PRESETS: { label: string; v: string }[] = [
+  { label: "kids $3", v: "3" },
+  { label: "mixed $4", v: "4" },
+  { label: "manga $6", v: "6" },
+  { label: "textbooks $8", v: "8" },
+];
 
 export function AddLead({
   onCreated,
 }: {
   onCreated: () => void;
 }) {
+  const { settings, loading: settingsLoading, error: settingsError } = useSettings();
+
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [asking, setAsking] = useState("");
@@ -26,15 +36,25 @@ export function AddLead({
     [sellable],
   );
 
-  const decision = useMemo(
-    () =>
-      decide({
+  const decision = useMemo(() => {
+    if (!settings) {
+      return decide({
         buyPriceCents: askingCents,
         sellableBooks: sellableN,
         estNetPerBookCents: netPerBookCents,
-      }),
-    [askingCents, sellableN, netPerBookCents],
-  );
+        profitFloorCents: 1000,
+        profitPercentOfBuy: 0.25,
+      });
+    }
+
+    return decide({
+      buyPriceCents: askingCents,
+      sellableBooks: sellableN,
+      estNetPerBookCents: netPerBookCents,
+      profitFloorCents: settings.profit_floor_cents,
+      profitPercentOfBuy: settings.profit_percent_of_buy,
+    });
+  }, [askingCents, sellableN, netPerBookCents, settings]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +67,8 @@ export function AddLead({
       approx_total_books: total ? Number(total) : undefined,
       category_tags: tags,
       est_net_per_book_cents: netPerBookCents ?? undefined,
+      zip: settings?.zip ?? "75071",
+      radius_miles: settings?.radius_miles ?? undefined,
       notes: notes.trim() || undefined,
     });
 
@@ -64,6 +86,22 @@ export function AddLead({
   function toggleTag(t: string) {
     setTags((prev) =>
       prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
+    );
+  }
+
+  if (settingsLoading) {
+    return (
+      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+        Loading settings…
+      </div>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-900">
+        {settingsError}
+      </div>
     );
   }
 
@@ -130,14 +168,17 @@ export function AddLead({
           <div className="rounded-xl border bg-slate-50 p-3">
             <div className="text-xs font-medium text-slate-600">Quick presets</div>
             <div className="mt-2 flex flex-wrap gap-2">
-              {[
-                { label: "kids $3", v: "3" },
-                { label: "mixed $4", v: "4" },
-                { label: "manga $6", v: "6" },
-                { label: "textbooks $8", v: "8" },
-              ].map((p) => (
+              {(settings?.net_per_book_presets
+                ? [
+                    { label: `kids $${(settings.net_per_book_presets.kids ?? 300) / 100}`, v: String((settings.net_per_book_presets.kids ?? 300) / 100) },
+                    { label: `mixed $${(settings.net_per_book_presets.mixed ?? 400) / 100}`, v: String((settings.net_per_book_presets.mixed ?? 400) / 100) },
+                    { label: `manga $${(settings.net_per_book_presets.manga ?? 600) / 100}`, v: String((settings.net_per_book_presets.manga ?? 600) / 100) },
+                    { label: `textbooks $${(settings.net_per_book_presets.textbooks ?? 800) / 100}`, v: String((settings.net_per_book_presets.textbooks ?? 800) / 100) },
+                  ]
+                : DEFAULT_PRESETS
+              ).map((p) => (
                 <button
-                  key={p.v}
+                  key={p.label}
                   type="button"
                   className="rounded-full border bg-white px-3 py-1 text-xs"
                   onClick={() => setNetPerBook(p.v)}

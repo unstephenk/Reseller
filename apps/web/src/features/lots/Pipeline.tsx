@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import type { Lot, LotStatus } from "./types";
-import { listLots, updateLotStatus } from "./lotsApi";
+import { listLots, updateLotStatusWithEvent } from "./lotsApi";
 import { centsToDollars } from "./money";
 
 const STATUSES: { key: LotStatus; label: string }[] = [
@@ -51,8 +52,8 @@ export function Pipeline({ refreshToken }: { refreshToken: number }) {
     return map;
   }, [lots]);
 
-  async function move(lotId: string, status: LotStatus) {
-    const updated = await updateLotStatus(lotId, status);
+  async function move(lotId: string, from: LotStatus, to: LotStatus) {
+    const updated = await updateLotStatusWithEvent(lotId, from, to);
     setLots((prev) => prev.map((l) => (l.id === lotId ? updated : l)));
   }
 
@@ -88,8 +89,16 @@ export function Pipeline({ refreshToken }: { refreshToken: number }) {
             <div className="mt-3 space-y-2">
               {items.map((l) => (
                 <div key={l.id} className="rounded-xl border p-3">
-                  <div className="text-sm font-medium">
-                    {l.title || "(untitled lot)"}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-sm font-medium">
+                      {l.title || "(untitled lot)"}
+                    </div>
+                    <Link
+                      className="shrink-0 text-xs underline"
+                      to={`/lots/${l.id}`}
+                    >
+                      Open
+                    </Link>
                   </div>
                   <div className="mt-1 text-xs text-slate-600">
                     Asking: {l.asking_price_cents != null ? `$${centsToDollars(l.asking_price_cents)}` : "—"}
@@ -101,7 +110,7 @@ export function Pipeline({ refreshToken }: { refreshToken: number }) {
                     <select
                       className="w-40 rounded-xl border bg-white px-3 py-2 text-xs"
                       value={l.status}
-                      onChange={(e) => move(l.id, e.target.value as LotStatus)}
+                      onChange={(e) => move(l.id, l.status, e.target.value as LotStatus)}
                     >
                       {STATUSES.map((x) => (
                         <option key={x.key} value={x.key}>
